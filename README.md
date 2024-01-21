@@ -27,3 +27,22 @@ After collecting the comments data using Selenium, the next crucial step is to p
 **Challenge with Multilingual Data:** While our current approach effectively removes most non-English characters, it does not entirely segregate comments in languages that use the same alphanumeric system as English, like French. This presents a challenge as non-English comments can introduce noise into our analysis, which is primarily designed for English text.
 
 **Future Plans - Language Translation:** To further refine the data quality and make our analysis more robust, we are planning to incorporate a translation feature. This feature will identify non-English comments and translate them into English. This approach will not only help in managing the "pollution" caused by multilingual data but also provide insights from non-English comments, thereby enriching our dataset.
+
+## 🔄 Data Clustering and Visualization
+After preprocessing the comments data, the next essential phase in the Common Comments program is the data clustering and visualization process. This step is crucial for distilling the vast array of comments into meaningful insights.
+
+**Utilizing Cohere's Vector Embeddings**: The program uses Cohere's vector embeddings to transform each comment into a high-dimensional vector. These vectors capture the semantic meaning of the comments, enabling the program to group similar comments together effectively.
+
+**Clustering Algorithms**
+Various clustering algorithms have been experimented with, including Affinity Propagation, DBSCAN (Density-Based Spatial Clustering of Applications with Noise), and KMeans. Each of these algorithms has unique characteristics:
+* Affinity Propagation: Creates clusters by sending messages between pairs of samples until convergence. It doesn’t require specifying the number of clusters.
+* DBSCAN: Groups together points that are closely packed together, marking as outliers points that lie alone in low-density regions.
+* KMeans: Aims to partition the observations into k clusters in which each observation belongs to the cluster with the nearest mean.
+
+**Refinement and Summarization** Once the comments are clustered, the program concatenates the results from these clusters. The concatenated clusters are then fed back into Cohere’s summarization model. This step distills the clustered comments into concise summaries, providing clear insights from large volumes of text data.
+
+**Multidimensional Visualization**
+3D Graphs: To visualize the clustering, the program generates multiple 3D graphs. These graphs represent the clusters in a three-dimensional space, offering a visual representation of how comments are grouped based on their semantic similarities.
+Dimension Enumeration: By enumerating different dimensions, the program can showcase various aspects of the clustered data, helping in better understanding the relationships and patterns within the comments.
+
+![image](https://github.com/16BitNarwhal/CommonComments/assets/31218485/caaf56bd-f21d-441c-9eed-e2550c3a4448)
