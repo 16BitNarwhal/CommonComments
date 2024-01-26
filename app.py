@@ -2,8 +2,7 @@ import streamlit as st
 import cohere
 import os
 from dotenv import load_dotenv
-from sklearn.cluster import KMeans, DBSCAN, AffinityPropagation
-import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 import pandas as pd
 import numpy as np
 
@@ -28,20 +27,14 @@ response = co.embed(
 embeddings = pd.DataFrame(response)
 X = np.array(embeddings)
 
+df[['x', 'y']] = X[:, :2]  # Assuming you're using the first two dimensions
+
 # cluster
 cluster = KMeans(n_clusters=10, random_state=0).fit(X)
-# cluster = DBSCAN(eps=0.5, min_samples=5).fit(X)
-# cluster = AffinityPropagation(random_state=42)
-cluster_labels = cluster.fit_predict(X)
-df['cluster'] = cluster_labels
+df['cluster'] = cluster.labels_
 
-# # plot the clusters with colors across different pairs of dimensions
-# from itertools import combinations
-
-fig, ax = plt.subplots(figsize=(10, 10))
-ax.scatter(X[:, 0], X[:, 1], c=cluster_labels, cmap='tab10')
-ax.set_xlabel('Dimension {}'.format(1))
-ax.set_ylabel('Dimension {}'.format(2))
-ax.set_title('Scatter Plot of X')
-
-st.pyplot(fig)
+# plot the clusters with colors across different pairs of dimensions
+import plotly.express as px
+fig = px.scatter(df, x='x', y='y', hover_data=['comments'], color='cluster')
+st.title('Comments Clustering')
+st.plotly_chart(fig)
