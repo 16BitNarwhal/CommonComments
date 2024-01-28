@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from sklearn.cluster import KMeans
 import pandas as pd
 import numpy as np
+import random
 
 # setup
 load_dotenv(dotenv_path='.env')
@@ -32,9 +33,17 @@ df[['x', 'y']] = X[:, :2]  # Assuming you're using the first two dimensions
 # cluster
 cluster = KMeans(n_clusters=10, random_state=0).fit(X)
 df['cluster'] = cluster.labels_
+df['cluster'] = df['cluster'].astype(str)
+
+# generate random colors
+num_clusters = df['cluster'].nunique()
+colors = ['#' + ''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+          for i in range(num_clusters)]
+color_map = {i: colors[i] for i in range(num_clusters)}
 
 # plot the clusters with colors across different pairs of dimensions
 import plotly.express as px
-fig = px.scatter(df, x='x', y='y', hover_data=['comments'], color='cluster')
+fig = px.scatter(df, x='x', y='y', hover_data=['comments'], 
+                 color='cluster', color_discrete_map=color_map)
 st.title('Comments Clustering')
 st.plotly_chart(fig)
