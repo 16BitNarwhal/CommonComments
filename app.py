@@ -35,6 +35,14 @@ cluster = KMeans(n_clusters=10, random_state=0).fit(X)
 df['cluster'] = cluster.labels_
 df['cluster'] = df['cluster'].astype(str)
 
+# multiselect widget
+selected_clusters = st.multiselect('Select Clusters to Display', 
+                                  options=df['cluster'].unique(),
+                                  default=df['cluster'].unique())
+
+# filter dataframe
+df = df[df['cluster'].isin(selected_clusters)]
+
 # generate random colors
 num_clusters = df['cluster'].nunique()
 colors = ['#' + ''.join([random.choice('0123456789ABCDEF') for j in range(6)])
@@ -44,6 +52,6 @@ color_map = {i: colors[i] for i in range(num_clusters)}
 # plot the clusters with colors across different pairs of dimensions
 import plotly.express as px
 fig = px.scatter(df, x='x', y='y', hover_data=['comments'], 
-                 color='cluster', color_discrete_map=color_map)
+                color='cluster', color_discrete_map=color_map)
 st.title('Comments Clustering')
 st.plotly_chart(fig)
