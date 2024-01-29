@@ -29,7 +29,7 @@ if st.button('Preprocess Data'):
   embeddings = pd.DataFrame(response)
   X = np.array(embeddings)
 
-  df[['x', 'y']] = X[:, :2]  # Assuming you're using the first two dimensions
+  df[['x', 'y']] = X[:, :2]  # assume first two dimensions
 
   # cluster
   cluster = KMeans(n_clusters=10, random_state=0).fit(X)
@@ -40,6 +40,7 @@ if st.button('Preprocess Data'):
 
 if 'df' in st.session_state:
   df = st.session_state['df']
+  df = df.sort_values(by='cluster')
 
   # multiselect widget
   selected_clusters = st.multiselect('Select Clusters to Display', 
@@ -63,14 +64,16 @@ if 'df' in st.session_state:
   st.plotly_chart(fig)
 
   # display dropdowns for each cluster
-  unique_clusters = df['cluster'].unique()
+  left_column, right_column = st.columns(2)
+
+  # Iterate through each cluster
+  unique_clusters = sorted(df['cluster'].unique())
   for cluster in unique_clusters:
-      st.subheader(f"Cluster {cluster}")
-      
-      # filter for selected cluster
-      cluster_df = df[df['cluster'] == cluster]
-      selected_comment = st.selectbox(
-          f"Select a comment from Cluster {cluster}", 
-          cluster_df['comments'],
-          key=f'cluster_{cluster}'
-      )
+    with left_column:
+      if st.button(f'Show Cluster {cluster}', key=f'button_{cluster}'):
+        cluster_comments = df[df['cluster'] == cluster]['comments'].tolist()
+
+        with right_column:
+          st.write(f"Comments for Cluster {cluster}:")
+          for comment in cluster_comments:
+            st.text(comment)
