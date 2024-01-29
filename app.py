@@ -20,13 +20,17 @@ if st.button('Preprocess Data'):
   df['comments'] = df['comments'].str.replace(r'[^a-zA-Z0-9\s]', '', regex=True)
   comments = df['comments'].tolist()
 
-  # embeddings
-  response = co.embed(
-    texts=comments,
-    model='embed-english-v3.0',
-    input_type='clustering'
-  )
-  embeddings = pd.DataFrame(response)
+  # # embeddings
+  # response = co.embed(
+  #   texts=comments,
+  #   model='embed-english-v3.0',
+  #   input_type='clustering'
+  # )
+  # embeddings = pd.DataFrame(response)
+  # X = np.array(embeddings)
+  
+  # load embeddings
+  embeddings = pd.read_csv('embed.csv')
   X = np.array(embeddings)
 
   df[['x', 'y']] = X[:, :2]  # assume first two dimensions
@@ -36,25 +40,38 @@ if st.button('Preprocess Data'):
   df['cluster'] = cluster.labels_
   df['cluster'] = df['cluster'].astype(str)
 
+  # save to session state
   st.session_state['df'] = df
-
-if 'df' in st.session_state:
-  df = st.session_state['df']
-  df = df.sort_values(by='cluster')
-
-  # multiselect widget
-  selected_clusters = st.multiselect('Select Clusters to Display', 
-                                    options=df['cluster'].unique(),
-                                    default=df['cluster'].unique())
-
-  # filter dataframe
-  df = df[df['cluster'].isin(selected_clusters)]
-
-  # generate random colors
+  st.session_state['selected_clusters'] = set(df['cluster'].unique())
+  
+  # generate colors
   num_clusters = df['cluster'].nunique()
   colors = ['#' + ''.join([random.choice('0123456789ABCDEF') for j in range(6)])
             for i in range(num_clusters)]
   color_map = {i: colors[i] for i in range(num_clusters)}
+  st.session_state['colors'] = color_map
+
+if 'df' in st.session_state and 'selected_clusters' in st.session_state \
+    and 'colors' in st.session_state:
+  df = st.session_state['df']
+  df = df.sort_values(by='cluster')
+  color_map = st.session_state['colors']
+
+  # sidebar for cluster selection
+  st.sidebar.title('Select Clusters (Graph)')
+  unique_clusters = sorted(df['cluster'].unique())
+  for cluster in unique_clusters:
+    on = st.sidebar.toggle(f"Cluster {cluster}", cluster in st.session_state['selected_clusters'])
+
+    if on and cluster not in st.session_state['selected_clusters']:
+      st.session_state['selected_clusters'].add(cluster)
+    elif not on and cluster in st.session_state['selected_clusters']:
+      st.session_state['selected_clusters'].remove(cluster)
+
+  selected_clusters = st.session_state['selected_clusters']
+  
+  # filter dataframe
+  df = df[df['cluster'].isin(selected_clusters)]
 
   # plot the clusters with colors across different pairs of dimensions
   import plotly.express as px
@@ -63,17 +80,13 @@ if 'df' in st.session_state:
   st.title('Comments Clustering')
   st.plotly_chart(fig)
 
-  # display dropdowns for each cluster
-  left_column, right_column = st.columns(2)
-
-  # Iterate through each cluster
+  # sidebar for cluster selection
+  st.sidebar.title('Select Cluster (List)')
   unique_clusters = sorted(df['cluster'].unique())
-  for cluster in unique_clusters:
-    with left_column:
-      if st.button(f'Show Cluster {cluster}', key=f'button_{cluster}'):
-        cluster_comments = df[df['cluster'] == cluster]['comments'].tolist()
+  selected_cluster = st.sidebar.selectbox('View Cluster List', unique_clusters)
 
-        with right_column:
-          st.write(f"Comments for Cluster {cluster}:")
-          for comment in cluster_comments:
-            st.text(comment)
+  # Main area for displaying comments
+  st.title(f"Comments for Cluster {selected_cluster}")
+  cluster_comments = df[df['cluster'] == selected_cluster]['comments'].tolist()
+  for comment in cluster_comments:
+    st.info(comment)
