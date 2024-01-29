@@ -61,3 +61,16 @@ if 'df' in st.session_state:
                   color='cluster', color_discrete_map=color_map)
   st.title('Comments Clustering')
   st.plotly_chart(fig)
+
+  # display dropdowns for each cluster
+  unique_clusters = df['cluster'].unique()
+  for cluster in unique_clusters:
+      st.subheader(f"Cluster {cluster}")
+      
+      # filter for selected cluster
+      cluster_df = df[df['cluster'] == cluster]
+      selected_comment = st.selectbox(
+          f"Select a comment from Cluster {cluster}", 
+          cluster_df['comments'],
+          key=f'cluster_{cluster}'
+      )
