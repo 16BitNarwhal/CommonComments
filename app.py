@@ -11,7 +11,17 @@ import random
 load_dotenv(dotenv_path='.env')
 co = cohere.Client(api_key=os.getenv('COHERE_API_KEY'))
 
-if st.button('Preprocess Data'):
+# preprocess options
+col1, col2, col3 = st.columns(3)
+with col1:
+  num_clusters = st.number_input('Number of Clusters', min_value=1, max_value=20, value=10)
+with col2:
+  random_state = st.number_input('Random State', min_value=0, max_value=100, value=42)
+with col3:
+  st.markdown("<style>div.row-widget.stButton > div{margin-bottom: 0px;}</style>", unsafe_allow_html=True)
+  preprocess_button = st.button('Preprocess Data')
+  
+if preprocess_button:
   # read data
   df = pd.read_csv('comments.csv')
 
@@ -36,7 +46,7 @@ if st.button('Preprocess Data'):
   df[['x', 'y']] = X[:, :2]  # assume first two dimensions
 
   # cluster
-  cluster = KMeans(n_clusters=10, random_state=0).fit(X)
+  cluster = KMeans(n_clusters=num_clusters, random_state=random_state).fit(X)
   df['cluster'] = cluster.labels_
   df['cluster'] = df['cluster'].astype(str)
 
