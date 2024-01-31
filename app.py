@@ -1,15 +1,15 @@
 import streamlit as st
-import cohere
-import os
-from dotenv import load_dotenv
+# import cohere
+# import os
+# from dotenv import load_dotenv
 from sklearn.cluster import KMeans
 import pandas as pd
 import numpy as np
 import random
 
 # setup
-load_dotenv(dotenv_path='.env')
-co = cohere.Client(api_key=os.getenv('COHERE_API_KEY'))
+# load_dotenv(dotenv_path='.env')
+# co = cohere.Client(api_key=os.getenv('COHERE_API_KEY'))
 
 # preprocess options
 col1, col2, col3 = st.columns(3)
