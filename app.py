@@ -83,8 +83,14 @@ if 'df' in st.session_state and 'selected_clusters' in st.session_state \
   # filter dataframe
   df = df[df['cluster'].isin(selected_clusters)]
 
-  # plot the clusters with colors across different pairs of dimensions
   import plotly.express as px
+
+  # plot pie chart containing number of comments per cluster
+  fig = px.pie(df, names='cluster', title='Comments per Cluster')
+  st.title('Comments per Cluster')
+  st.plotly_chart(fig)
+
+  # plot the clusters with colors across different pairs of dimensions
   fig = px.scatter(df, x='x', y='y', hover_data=['comments'], 
                   color='cluster', color_discrete_map=color_map)
   st.title('Comments Clustering')
