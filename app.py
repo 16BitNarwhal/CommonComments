@@ -50,6 +50,12 @@ if preprocess_button:
   df['cluster'] = cluster.labels_
   df['cluster'] = df['cluster'].astype(str)
 
+  # summarize each cluster
+  cluster_summary = df.groupby('cluster').agg({'comments': list}).reset_index()
+  cluster_summary['comments'] = cluster_summary['comments'].apply(lambda x: ' '.join(x))
+  
+  st.write(cluster_summary)
+
   # save to session state
   st.session_state['df'] = df
   st.session_state['selected_clusters'] = set(df['cluster'].unique())
