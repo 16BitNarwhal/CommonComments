@@ -3,6 +3,7 @@ import streamlit as st
 # import os
 # from dotenv import load_dotenv
 from sklearn.cluster import KMeans
+from sklearn.metrics import pairwise_distances_argmin_min
 import pandas as pd
 import numpy as np
 import random
@@ -51,15 +52,23 @@ if preprocess_button:
   df['cluster'] = df['cluster'].astype(str)
 
   # summarize each cluster
-  cluster_summary = df.groupby('cluster').agg({'comments': list}).reset_index()
-  cluster_summary['comments'] = cluster_summary['comments'].apply(lambda x: ' '.join(x))
+  closest, _ = pairwise_distances_argmin_min(cluster.cluster_centers_, X)
+  densest_cluster = closest[np.bincount(cluster.labels_).argmax()]
   
-  st.write(cluster_summary)
+  representatives = []
+
+  st.title('Representative Comment by Cluster')
+  for i, center in enumerate(cluster.cluster_centers_):
+    # match cluster to comments
+    closest, _ = pairwise_distances_argmin_min([center], X)
+    c = df['comments'].iloc[closest]
+    representatives.append(c.values[0])
 
   # save to session state
   st.session_state['df'] = df
   st.session_state['selected_clusters'] = set(df['cluster'].unique())
-  
+  st.session_state['representatives'] = representatives
+
   # generate colors
   num_clusters = df['cluster'].nunique()
   colors = ['#' + ''.join([random.choice('0123456789ABCDEF') for j in range(6)])
@@ -106,6 +115,11 @@ if 'df' in st.session_state and 'selected_clusters' in st.session_state \
   st.sidebar.title('Select Cluster (List)')
   unique_clusters = sorted(df['cluster'].unique())
   selected_cluster = st.sidebar.selectbox('View Cluster List', unique_clusters)
+
+  # representative comment
+  st.title(f"Representative Comment for Cluster {selected_cluster}")
+  representative = st.session_state['representatives'][int(selected_cluster)]
+  st.info(representative)
 
   # Main area for displaying comments
   st.title(f"Comments for Cluster {selected_cluster}")
